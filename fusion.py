@@ -16,10 +16,27 @@
 
 import time
 from math import sqrt, atan2, asin, degrees, radians, cos, sin
+import numpy as np
 
 
 def elapsed_micros(start_time):
     return time.ticks_diff(time.ticks_us(), start_time)
+
+
+def rotation_matrix(pitch, heading, roll):
+    pitch = radians(pitch)
+    heading = radians(heading)
+    roll = radians(roll)
+    cy = cos(roll)  # phi
+    sy = sin(roll)
+    cr = cos(pitch)  # theta
+    sr = sin(pitch)
+    cp = cos(heading)  # psi
+    sp = sin(heading)
+    r = np.array([[cr * cp, -cy * sp + sy * sr * cp, sy * sp + cy * sr * cp],
+              [cr * sp, cy * cp + sy * sr * sp, -sy * cp + cy * sr * sp],
+              [-sr, sy * cr, cy * cr]])
+    return r
 
 
 class Fusion(object):
@@ -33,12 +50,12 @@ class Fusion(object):
         self.magbias = (0, 0, 0)  # local magnetic bias factors: set from calibration
         self.start_time = None  # Time between updates
 
-        cy = cos(heading * 0.5);
-        sy = sin(heading * 0.5);
-        cr = cos(roll * 0.5);
-        sr = sin(roll * 0.5);
-        cp = cos(pitch * 0.5);
-        sp = sin(pitch * 0.5);
+        cy = cos(heading * 0.5)
+        sy = sin(heading * 0.5)
+        cr = cos(roll * 0.5)
+        sr = sin(roll * 0.5)
+        cp = cos(pitch * 0.5)
+        sp = sin(pitch * 0.5)
 
         self.q = [cy * cr * cp + sy * sr * sp,
                   cy * sr * cp - sy * cr * sp,
@@ -48,9 +65,9 @@ class Fusion(object):
          # vector to hold quaternion
         GyroMeasError = radians(40)  # Original code indicates this leads to a 2 sec response time
         self.beta = sqrt(3.0 / 4.0) * GyroMeasError  # compute beta (see README)
-        self.pitch = pitch
-        self.heading = heading
-        self.roll = roll
+        self.pitch = degrees(pitch)
+        self.heading = degrees(heading)
+        self.roll = degrees(roll)
 
     def calibrate(self, getxyz, stopfunc, wait=0):
         magmax = list(getxyz())  # Initialise max and min lists with current values
