@@ -3,8 +3,9 @@ import time
 import TrackRecognition as tr
 import sys
 
-ser = serial.Serial('/dev/ttyUSB0',115200)
-#ser_light = serial.Serial("COM3", 9600)
+# ser = serial.Serial('/dev/ttyUSB0',115200)
+ser = serial.Serial('COM4',115200)
+# ser_light = serial.Serial("COM3", 9600)
 file_name = 'gyro'
 if len(sys.argv) >= 2:
     file_name = sys.argv[1]

@@ -6,7 +6,11 @@ import fusion
 import time
 import numpy as np
 import tensorflow as tf
+import pickle
 
+def new_recognize_track(file_name):
+    with open('my_dumped_classifier.pkl', 'rb') as fid:
+        clf = pickle.load(fid)
 
 def recognize_track(file_name):
     data = []
