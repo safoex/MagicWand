@@ -8,9 +8,49 @@ import numpy as np
 import tensorflow as tf
 import pickle
 
+
+def signal_filter(data, x1, x2):
+    data = data.transpose()
+    res = np.zeros_like(data)
+    for i, x in enumerate(data):
+        b, a = signal.butter(x1, x2)
+        y = signal.filtfilt(b, a, x)
+        res[i] = y
+    return res.transpose()
+
+
+def discretize_data(data, n_points):
+    step = len(data) / n_points
+    data = data.transpose()
+    res = np.zeros((data.shape[0], n_points))
+    for i, x in enumerate(data):
+        for j in range(n_points):
+            res[i, j] = np.mean(data[i, int(j * step):int((j+1) * step)])
+    return res.transpose()
+
+
 def new_recognize_track(file_name):
-    with open('my_dumped_classifier.pkl', 'rb') as fid:
+    n_points = 15
+    with open('best_classifier.pkl', 'rb') as fid:
         clf = pickle.load(fid)
+
+    row_data = []
+    n_lines = 0
+    with open(file_name, 'r') as f:
+        for line in f:
+            result = re.findall(r"-?\d+.\d+", line)
+            if len(result) == 10:
+                row_data.append([float(x) for x in result])
+                n_lines += 1
+    if n_lines < n_points:
+        return None
+
+    smooth_data = signal_filter(np.array(row_data)[:, 1:7], 3, 0.2)
+    data = discretize_data(smooth_data, n_points)
+
+    x = [data.flatten()]
+    return clf.predict(x)[0]
+
 
 def recognize_track(file_name):
     data = []
